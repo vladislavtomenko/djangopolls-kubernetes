@@ -34,8 +34,6 @@ You can launch django polls locally first. Clone repository and run in the repos
 ```bash
 docker-compose build
 docker-compose up -d
-docker exec -it djangopollskubernetes_django_1 python manage.py migrate
-docker exec -it djangopollskubernetes_django_1 python manage.py createsuperuser
 ```
 
 Django polls app is started now, but a database is still empty. The next step is to complete DB migration:
