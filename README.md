@@ -138,3 +138,9 @@ IP address to connect you can find in kubernetes UI or through kubectl:
 ```bash
 kubectl describe services djangopolls-production | grep Ingress
 ```
+
+### What can be improved?
+
+* Scalable database server in kubernetes cluster
+* Nginx balancer in front of applications
+* Integration tests
