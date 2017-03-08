@@ -78,7 +78,7 @@ Open http://127.0.0.1:8001/ui in browser, you should see kubernetes cluster web 
 
 ### Database server install
 
-You can use any mysql server (for example Amazon RDS or gcloud SQL), but in this example we will consider mysql installation to kubernetes cluster. You can do by it by running the commands below:
+You can use any mysql server (for example Amazon RDS or gcloud SQL), but in this example we will consider mysql installation to kubernetes cluster. You can do it by running the commands below:
 ```bash
 gcloud config set project <GKE project ID>
 gcloud compute disks create --size=20GB mysql-disk
