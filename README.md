@@ -63,14 +63,14 @@ We will deploy polls to GKE. It offers two services we need:
 * kubernetes
 * container registry
 
-Create a basic cluster in google cloud engine. More info you can find in [GKE documentation](https://cloud.google.com/container-engine/docs/clusters/operations). Also write zone and project ID to some place.
+Create a basic cluster in google cloud engine. More info you can find in [GKE documentation](https://cloud.google.com/container-engine/docs/clusters/operations). Also write zone, cluster and project ID to some place.
 
 Obtain gcloud key in Cloud Platform console. Need to create [Service account](https://developers.google.com/api-client-library/php/auth/service-accounts) first to do it. Please note that gcloud key should be in json fromat.
 
 Install [gcloud tools](https://cloud.google.com/sdk/gcloud/) and [kubectl](https://kubernetes.io/docs/user-guide/kubectl-overview/). Let's check kubectl now:
 ```bash
 gcloud auth activate-service-account --key-file=key.json
-gcloud container clusters get-credentials cluster-1 --zone <GKE zone> --project <GKE project ID>
+gcloud container clusters get-credentials <GKE cluster> --zone <GKE zone> --project <GKE project ID>
 kubectl proxy
 ```
 
