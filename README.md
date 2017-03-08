@@ -26,6 +26,8 @@ Many cloud providers have kubernetes as a service (google, aws etc.), so it's ea
 * gcloud and kubectl tools
 * docker and docker-compose
 
+Google cloud has 60 days free usage and CircleCI has a free plan, so these platforms were chosen as the cheapest for test purposes. You can use any CI system and kubernetes cluster, but it'll require some code modification.
+
 ### Local environment
 
 You can launch django polls locally first. Clone repository and run in the repository directory:
