@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: djangopolls-production-lb
+    labels:
+        name: djangopolls-production-lb
+spec:
+    type: LoadBalancer
+    ports:
+      - 
+        port: 80
+        targetPort: 8000
+    selector:
+        app: djangopolls-production

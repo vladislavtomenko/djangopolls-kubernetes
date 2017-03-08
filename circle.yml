@@ -1,0 +1,70 @@
+machine:
+  services:
+    - docker
+
+general:
+  branches:
+    only:
+      - production
+      - sandbox
+  artifacts:
+    - "/var/lib/docker"
+
+dependencies:
+  pre:
+    - > 
+      if [[ $CIRCLE_BRANCH = 'production' ]]; then echo 'export GCLOUD_KEY=$PROD_GCLOUD_KEY' >> ~/.bashrc \
+      && echo export GKE_ZONE=$PROD_GKE_ZONE >> ~/.bashrc \
+      && echo export GKE_PROJECT=$PROD_GKE_PROJECT >> ~/.bashrc \
+      && echo export GKE_CLUSTER=$PROD_GKE_CLUSTER >> ~/.bashrc \
+      && echo export MYSQL_DB=$PROD_MYSQL_DB >> ~/.bashrc \
+      && echo export MYSQL_USER=$PROD_MYSQL_USER >> ~/.bashrc \
+      && echo export MYSQL_PASSWORD=$PROD_MYSQL_PASSWORD >> ~/.bashrc \
+      && echo export MYSQL_SERVER=$PROD_MYSQL_SERVER >> ~/.bashrc \
+      && echo export MYSQL_PORT=$PROD_MYSQL_PORT >> ~/.bashrc \
+      && echo export REPLICAS_NUM=$PROD_REPLICAS_NUM >> ~/.bashrc ; fi
+    - > 
+      if [[ $CIRCLE_BRANCH = 'sandbox' ]]; then echo 'export GCLOUD_KEY=$SANDBOX_GCLOUD_KEY' >> ~/.bashrc \
+      && echo export GKE_ZONE=$SANDBOX_GKE_ZONE >> ~/.bashrc \
+      && echo export GKE_PROJECT=$SANDBOX_GKE_PROJECT >> ~/.bashrc \
+      && echo export GKE_CLUSTER=$SANDBOX_GKE_CLUSTER >> ~/.bashrc \
+      && echo export MYSQL_DB=$SANDBOX_MYSQL_DB >> ~/.bashrc \
+      && echo export MYSQL_USER=$SANDBOX_MYSQL_USER >> ~/.bashrc \
+      && echo export MYSQL_PASSWORD=$SANDBOX_MYSQL_PASSWORD >> ~/.bashrc \
+      && echo export MYSQL_SERVER=$SANDBOX_MYSQL_SERVER >> ~/.bashrc \
+      && echo export MYSQL_PORT=$SANDBOX_MYSQL_PORT >> ~/.bashrc \
+      && echo export REPLICAS_NUM=$SANDBOX_REPLICAS_NUM >> ~/.bashrc ; fi
+  override:
+    - pip install -r requirements.txt
+    - sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update --version 120.0.0
+    - sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update --version 120.0.0 kubectl
+
+compile:
+  pre:
+    - echo $GCLOUD_KEY > kubernetes/key.json
+    - gcloud auth activate-service-account --key-file=kubernetes/key.json
+    - gcloud container clusters get-credentials ${GKE_CLUSTER} --zone ${GKE_ZONE} --project ${GKE_PROJECT}
+    - envsubst < mysite/settings.py.template > mysite/settings.py
+  override:
+    - docker build --rm=false -t gcr.io/${GKE_PROJECT}/djangopolls:${CIRCLE_BUILD_NUM} .
+  post:
+    - gcloud docker -- push gcr.io/${GKE_PROJECT}/djangopolls:${CIRCLE_BUILD_NUM}
+
+test:
+  pre:
+    - kubectl run -it --rm --image=gcr.io/${GKE_PROJECT}/djangopolls:$CIRCLE_BUILD_NUM djangopolls-run-migration-${CIRCLE_BUILD_NUM} -- python manage.py migrate
+  override:
+    - cat mysite/settings.py
+    - kubectl run -it --rm --image=gcr.io/${GKE_PROJECT}/djangopolls:$CIRCLE_BUILD_NUM djangopolls-run-tests-${CIRCLE_BUILD_NUM} -- python manage.py test
+
+deployment:
+  production:
+    branch: production
+    commands:
+      - envsubst < kubernetes/django.yaml.template > kubernetes/django.yaml
+      - kubectl get rc | grep djangopolls-${CIRCLE_BRANCH} && kubectl rolling-update djangopolls-${CIRCLE_BRANCH} --image=gcr.io/${GKE_PROJECT}/djangopolls:${CIRCLE_BUILD_NUM} || kubectl create -f kubernetes/django.yaml
+  sandbox:
+    branch: sandbox
+    commands:
+      - envsubst < kubernetes/django.yaml.template > kubernetes/django.yaml
+      - kubectl get rc | grep djangopolls-${CIRCLE_BRANCH} && kubectl rolling-update djangopolls-${CIRCLE_BRANCH} --image=gcr.io/${GKE_PROJECT}/djangopolls:${CIRCLE_BUILD_NUM} || kubectl create -f kubernetes/django.yaml

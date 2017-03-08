@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: djangopolls-${CIRCLE_BRANCH}
+spec:
+  replicas: ${REPLICAS_NUM}
+  template:
+    metadata:
+      labels:
+        app: djangopolls-${CIRCLE_BRANCH}
+    spec:
+      containers:
+      - name: django
+        image: gcr.io/${GKE_PROJECT}/djangopolls:${CIRCLE_BUILD_NUM}
+        ports:
+        - containerPort: 8000

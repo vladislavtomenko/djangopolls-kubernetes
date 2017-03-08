@@ -1,0 +1,5 @@
+kubernetes
+.circle.yml
+docker-compose.yaml
+.git*
+Dockerfile
