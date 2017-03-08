@@ -54,7 +54,6 @@ test:
   pre:
     - kubectl run -it --rm --image=gcr.io/${GKE_PROJECT}/djangopolls:$CIRCLE_BUILD_NUM djangopolls-run-migration-${CIRCLE_BUILD_NUM} -- python manage.py migrate
   override:
-    - cat mysite/settings.py
     - kubectl run -it --rm --image=gcr.io/${GKE_PROJECT}/djangopolls:$CIRCLE_BUILD_NUM djangopolls-run-tests-${CIRCLE_BUILD_NUM} -- python manage.py test
 
 deployment:
